@@ -2,6 +2,7 @@ from arff2pandas import a2p
 from torch.utils.data import Dataset
 import torch
 import numpy as np
+import os
 
 
 # {DATASET}_reading Functions: return tensors X, Y
@@ -9,9 +10,10 @@ import numpy as np
 # For single-label problem,  Y.shape = [n_sample, 1]
 
 def ecg5000_reading():
-    with open('ECG5000/ECG5000_TRAIN.arff') as f:
+    path = os.path.dirname(__file__)
+    with open(path + '/ECG5000/ECG5000_TRAIN.arff') as f:
         train = a2p.load(f)
-    with open('ECG5000/ECG5000_TEST.arff') as f:
+    with open(path + '/ECG5000/ECG5000_TEST.arff') as f:
         test = a2p.load(f)
 
     df = train.append(test, ignore_index=True)

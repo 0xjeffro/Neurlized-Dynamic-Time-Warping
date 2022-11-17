@@ -19,7 +19,7 @@ class DTW_RNN(nn.Module):
         x_t = inputs.unsqueeze(2).cuda()  # [B, D, 1]
         assert (self.B, self.D, 1) == x_t.shape
 
-        s_prev_batch = hidden   # [B, M ,L]
+        s_prev_batch = hidden  # [B, M ,L]
         assert (self.B, self.M, self.L) == s_prev_batch.shape
 
         x_t = x_t.matmul(self.u)  # [B, D, M]
@@ -59,3 +59,43 @@ class DTW_RNN(nn.Module):
         o = torch.zeros(self.L)
         o[-1] = 1
         return o.cuda()
+
+
+class Logic(nn.Module):
+    def __init__(self):
+        super(Logic, self).__init__()
+        var = self.init_variable()
+        self.softmax = nn.Softmax(dim=1)
+        self.one = torch.autograd.Variable(var, requires_grad=False)
+        self.one = self.one.cuda()
+
+    def forward(self, inputs):
+        t = self.softmax(-inputs)
+        t = torch.matmul(t, self.one)
+        return t
+
+    def init_variable(self, n_f=50, f_map=[(0, 10), (10, 20), (20, 30), (30, 40), (40, 50)]):
+        t = torch.zeros((n_f, len(f_map)))
+        for i in range(len(f_map)):
+            t[f_map[i][0]: f_map[i][1], i] = 1
+        return t.cuda()
+
+
+class Model(nn.Module):
+    def __init__(self, shaplets, batch_size):
+        super(Model, self).__init__()
+        self.model = DTW_RNN(shaplets, batch_size)
+        self.N = Logic()
+
+    def forward(self, inputs):
+        inputs = inputs.cuda()
+        s = self.model.init_hidden()
+
+        B = inputs.shape[0]  # batch_size
+        N = inputs.shape[1]  # n_step
+        o = None
+        for i in range(N):
+            input_x = inputs[:, i, :]  # [B, dim]
+            o, s = self.model(input_x, s)
+        o_ = self.N(o)
+        return o_

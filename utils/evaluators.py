@@ -9,6 +9,7 @@ def compute_ave_batch_loss(model, data_loader, loss_func):
     :param loss_func: nn.NLLLoss()
 
     Traverse data_loader and compute the loss.
+
     :return:  ave_batch_loss = total_loss / len(data_loader)
     """
 
@@ -26,7 +27,6 @@ def compute_ave_batch_loss(model, data_loader, loss_func):
 
 def compute_acc(model, data_loader, labels, average='macro'):
     """
-
     :param model: Torch Model Obj
     :param data_loader: torch.DataLoader() Obj
     :param labels, average:
