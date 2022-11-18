@@ -1,10 +1,10 @@
 from torch import nn
 
 
-class LSTMClassification(nn.Module):
+class LSTM_Classification(nn.Module):
 
     def __init__(self, input_dim, hidden_dim, target_size, num_layers=1, bidirectional=False, dropout=0.0):
-        super(LSTMClassification, self).__init__()
+        super(LSTM_Classification, self).__init__()
         self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True,
                             num_layers=num_layers,
                             bidirectional=bidirectional,
