@@ -22,7 +22,23 @@ class DS(Dataset):
         return self.length
 
 
-def select_prototypes(dataset, n_prototypes, seed):# (X, Y, n_prototypes, seed):
+def select_prototypes_for_imbalance(X, Y, n_prototypes, seed):
+    np.random.seed(seed)
+    n_classes = len(np.unique(Y))
+
+    prototypes = np.zeros((n_prototypes, X.shape[1], X.shape[2]))
+    labels = np.zeros((n_prototypes, 1))
+    for i in range(n_classes):
+        class_indices = np.where(Y == i)[0]
+        # print('class_indices:', len(class_indices))
+        class_prototypes = np.random.choice(class_indices, n_prototypes // n_classes, replace=True)
+        prototypes[i * (n_prototypes // n_classes):(i + 1) * (n_prototypes // n_classes), :, :] = X[class_prototypes, :,
+                                                                                                  :]
+        labels[i * (n_prototypes // n_classes):(i + 1) * (n_prototypes // n_classes), :] = Y[class_prototypes, :]
+    return prototypes, labels
+
+
+def select_prototypes(dataset, n_prototypes, seed):
     X, Y = dataset.x, dataset.y
     np.random.seed(seed)
     n_classes = len(np.unique(Y))
@@ -88,7 +104,7 @@ def DTW_RNN_imbalance_handler(X_train, Y_train, X_test, Y_test, n_pos, args):
 
 
     # select prototypes
-    prototypes, labels = select_prototypes(X_train, Y_train, n_prototypes, args.seed)
+    prototypes, labels = select_prototypes_for_imbalance(X_train, Y_train, n_prototypes, args.seed)
 
     # adaptive scaling
     scaled_prototypes = adaptive_scaling(prototypes, scaling_rate)
@@ -157,7 +173,7 @@ def DTW_RNN_imbalance_handler(X_train, Y_train, X_test, Y_test, n_pos, args):
 
         epoch_train_loss = train_loss / len(train_dl)
 
-        val_acc, _, _, _, _, _ = compute_acc(model, test_dl, labels=labels, average='binary')  # val_dl!!!!!!!
+        val_acc, _, _, _, _, _ = compute_acc(model, test_dl, labels=labels, average='binary')
         acc, prec, f1, auc, auprc, pce = compute_acc(model, test_dl, labels=labels, average='binary')
 
         if val_acc > best_val_acc:
@@ -230,9 +246,8 @@ def DTW_RNN_handler(dataset, args):
 
             if epoch == 0:
                 acc, prec, f1, auc, auprc, pce = compute_acc(model, test_dl, labels=labels)
-                print('🌟🌟🌟 {}-shot Result: \tAcc: {:.6f} \tPrec: {:.6f} \tF1: {:.6f} \tAUC: {:.6f} \tAUPRC: {:.6f}'
-                      ' \tPCE: {:.6f}'.format(
-                        args.k_shot, acc, prec, f1, auc, auprc, pce
+                print('🌟🌟🌟 {}-shot Result: \tAcc: {:.6f} \tPrec: {:.6f} \tF1: {:.6f}'.format(
+                        args.k_shot, acc, prec, f1
                 ))
 
             train_loss = 0
@@ -252,7 +267,6 @@ def DTW_RNN_handler(dataset, args):
             # epoch_val_loss = compute_ave_batch_loss(model, val_dl, criterion)
             # epoch_test_loss = compute_ave_batch_loss(model, test_dl, criterion)
 
-            #val_acc, _, _, _ = compute_acc(model, test_dl, labels=labels)  # val_dl!!!!!!!
 
             # if val_acc > best_val_acc:
             #     best_val_acc = val_acc
@@ -260,9 +274,8 @@ def DTW_RNN_handler(dataset, args):
             #     print('Current best test result: \tAccuracy: {:.6f} \tPrecision: {:.6f} '
             #           '\tF1-score: {:.6f} \tPCE: {:.6f}'.format(acc, prec, f1, pce))
             acc, prec, f1, auc, auprc, pce = compute_acc(model, test_dl, labels=labels)
-            print('Epoch: {} \t{}-shot Result: \tAcc: {:.6f} \tPrec: {:.6f} \tF1: {:.6f} \tAUC: {:.6f} \tAUPRC: {:.6f}'
-                  ' \tPCE: {:.6f}'.format(
-                epoch, args.k_shot, acc, prec, f1, auc, auprc, pce
+            print('Epoch: {} \t{}-shot Result: \tAcc: {:.6f} \tPrec: {:.6f} \tF1: {:.6f} '.format(
+                epoch, args.k_shot, acc, prec, f1
             ))
         #     print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}  \tTesting Loss: {:.6f} '
         #           '\n\t\t\tAccuracy: {:.6f} \tPrecision: {:.6f} \tF1-score: {:.6f} \tPCE: {:.6f}'.format(

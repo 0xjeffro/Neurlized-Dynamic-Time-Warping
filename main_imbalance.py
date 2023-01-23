@@ -11,7 +11,7 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     parser = argparse.ArgumentParser()
     # General settings
-    parser.add_argument('--dataset', type=str, default='Yoga', help='dataset name',
+    parser.add_argument('--dataset', type=str, default='SwedishLeaf', help='dataset name',
                         choices=get_UCRArchive_2018_datasets_names())
 
     parser.add_argument('--lr', type=float, default=0.03, help='learning rate')
@@ -22,9 +22,8 @@ if __name__ == '__main__':
     parser.add_argument('--k_shot', type=int, default=10, help='number of k-shot')
     parser.add_argument('-k_additional', type=int, default=2, help='number of additional k-shot')
 
-    parser.add_argument('--scaling_rate', type=float, default=0.4, help='scaling rate')
+    parser.add_argument('--scaling_rate', type=float, default=0.6, help='scaling rate')
 
-    parser.add_argument('--dp', type=float, default=0.3, help='dropout rate')
     args = parser.parse_args()
 
     seeds = [int(s) for s in args.seeds.split(':')]
