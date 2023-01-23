@@ -124,3 +124,9 @@ dmypy.json
 .pyre/
 
 .idea/
+
+datasets/UCRArchive_2018/
+
+results/
+
+.DS_Store
