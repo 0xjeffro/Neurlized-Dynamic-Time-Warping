@@ -29,7 +29,6 @@ if __name__ == '__main__':
     seeds = [int(s) for s in args.seeds.split(':')]
     for seed in seeds:
         torch.cuda.empty_cache()
-        set_seed(42)
         logging.log(logging.INFO, 'Iterate Seed: {}'.format(seed))
         args.seed = seed
         set_seed(seed)
